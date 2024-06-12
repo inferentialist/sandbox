@@ -96,16 +96,17 @@ grid_cross <- ((true_effect_rate * grid_sz) %% grid_blocks) / grid_blocks
 
 # determine the "mass" in each grid cell
 grid_fill <- array(0.0, dim = c(grid_blocks, grid_blocks))
+grid_label <- array(0L, dim = c(grid_blocks, grid_blocks))
 grid_fp <- ceiling(true_effect_rate * grid_sz) / grid_sz
 avail_te <- (true_effect_rate * power) * grid_sz
 avail_ne <- (no_effect_rate * half_alpha) * grid_sz
 
 for (i in seq(0, grid_sz - 1)) {
-  c <- 1 + i %% grid_blocks
-  r <- 1 + i %/% grid_blocks
+  ci <- 1 + i %% grid_blocks
+  ri <- 1 + i %/% grid_blocks
   pct <- (i + 1) / grid_sz
 
-  grid_fill[r, c] <- if (pct <= grid_fp) {
+  grid_fill[ri, ci] <- if (pct <= grid_fp) {
     avail_te <- avail_te - 1
     if (avail_te > 0) {
       1.0
@@ -117,13 +118,15 @@ for (i in seq(0, grid_sz - 1)) {
   } else {
     avail_ne <- avail_ne - 1
     if (avail_ne > 0) {
-      - 1.0
+      1.0
     } else if (avail_ne > -1) {
-      -(avail_ne + 1)
+      avail_ne + 1
     } else {
       0.0
     }
   }
+
+  grid_label[ri, ci] <- if (pct < grid_fp) 1L else if (pct > grid_fp) -1L else 0L
 }
 
 #' the polygons / lines we want to draw
@@ -146,26 +149,17 @@ shapes <- list(
   )
 )
 
+glyph_full <- "\U25A0"
+glyph_empty <- "\U25A1"
+glyph_partial <- "\U25A7"
 
-textbox <- function(keys, labs, cex = 1.0) {
-
-  content <- paste(keys, labs, collapse = "\n")
-
-  vpad <- grconvertY(0.25, "inches", "user")
-  h <- strheight(content, cex = cex) + 2 * vpad
-
-  hpad <- grconvertX(0.25, "inches", "user")
-  w <- strwidth(content, cex = cex) + 2 * hpad
-
-  rect(0, 0, w, h)
-
-}
-
-keys <- c("\U2611", "\U2612", "\U25A0", "\U25A0")
-key_colors <- c("forestgreen", "firebrick1", "#C7E2C7", "#FFCBCB")
+keys <- c(glyph_full, glyph_full, glyph_empty, glyph_empty, glyph_full, glyph_full)
+key_colors <- c("forestgreen", "firebrick1", "firebrick1", "forestgreen", "#C7E2C7", "#FFCBCB")
 labs <- c(
   "a significant real effect",
   "a \"significant\" spurious effect",
+  "a false negative",
+  "a true negative",
   "experiments with a real effect",
   "experiments with no effect"
 )
@@ -208,14 +202,31 @@ p <- withr::with_par(
         gx <- (ci - 0.5) / grid_blocks
 
         gf <- grid_fill[ri, ci]
-        if (gf > 0) {
-          text(gx, gy, "\U2611", adj =  c(0.5, 0.5), col = "forestgreen", cex = gf)
-        } else if (gf < 0) {
-          text(gx, gy, "\U2612", adj =  c(0.5, 0.5), col = "firebrick1", cex = -gf)
+        gl <- grid_label[ri, ci]
+
+        col <- if (gl == 1L && gf > 0.01) {
+         "forestgreen"
+        } else if (gl == 1L && gf <= 0.01) {
+          "firebrick1"
+        } else if (gl == -1L && gf > 0.01) {
+          "firebrick1"
+        } else if (gl == -1L && gf <= 0.01) {
+          "forestgreen"
+        } else {
+          "gray"
+        }
+
+        if (gf == 1L) {
+          text(gx, gy, glyph_full, adj = c(0.5, 0.5), col = col, family = "Noto Mono")  # check \U2611
+        } else if (gf > 0L) {
+          text(gx, gy, glyph_partial, adj = c(0.5, 0.5), col = col, family = "Noto Mono")
+        } else if (ri != grid_blocks || ci != grid_blocks) {
+          text(gx, gy, glyph_empty, adj = c(0.5, 0.5), col = col, family = "Noto Mono")
         }
       }
     }
 
+    # authorial credit
     vpad <- 0.5 * strheight("", cex = 0.5)
     th <- 1.3 * strheight("", cex = 0.5)
     text(0.95, vpad + 3 * th, "dustin", adj = c(0.5, 0), cex = 0.5)
@@ -224,11 +235,12 @@ p <- withr::with_par(
     text(0.95, vpad + 0 * th, ".com", adj = c(0.5, 0), cex = 0.5)
 
 
-    cex <- 0.65
+    # textbox
+    cex <- 0.5
     content <- paste(keys, labs)
 
-    line_height <- max(strheight(content, cex = cex))
-    line_width <- max(strwidth(content, cex = cex))
+    line_height <- max(strheight(content, cex = cex, family = "Noto Mono"))
+    line_width <- max(strwidth(content, cex = cex, family = "Noto Mono"))
 
     vmar <- grconvertY(c(0, 0.15), from = "inches", to = "user") %>%
       diff()
@@ -237,26 +249,22 @@ p <- withr::with_par(
 
     hmar <- grconvertX(c(0, 0.25), from = "inches", to = "user") %>%
       diff()
-    hpad <- strwidth("M", cex = cex)
+    hpad <- strwidth("M", cex = cex, family = "Noto Mono")
     w <- line_width + 2 * hmar
 
     xs <- 0.03
     ys <- 0.04
-    rect(xs, ys, w + xs, h + ys, col = "white", border = "gray")
+    rect(xs, ys, w + xs, h + ys, col = adjustcolor("white", alpha.f = 0.9), border = "gray")
 
     xoff <- xs + hmar + 0.5 * hpad
+    xoff2 <- xoff + 3 * hpad
     yoff <- ys + vmar + 0.5 * line_height
-    text(xoff, yoff + 3 * vpad, keys[1], adj = c(0.5, 0), cex = cex, col = key_colors[1])
-    text(xoff, yoff + 2 * vpad, keys[2], adj = c(0.5, 0), cex = cex, col = key_colors[2])
-    text(xoff, yoff + 1 * vpad, keys[3], adj = c(0.5, 0), cex = cex, col = key_colors[3])
-    text(xoff, yoff + 0 * vpad, keys[4], adj = c(0.5, 0), cex = cex, col = key_colors[4])
-
-    xoff2 <- xoff + 1 * hpad
-    text(xoff2, yoff + 3 * vpad, labs[1], adj = c(0, 0), cex = cex)
-    text(xoff2, yoff + 2 * vpad, labs[2], adj = c(0, 0), cex = cex)
-    text(xoff2, yoff + 1 * vpad, labs[3], adj = c(0, 0), cex = cex)
-    text(xoff2, yoff + 0 * vpad, labs[4], adj = c(0, 0), cex = cex)
-
+    nl <- length(labs)
+    for (j in seq_along(labs)) {
+      k <- nl - j
+      text(xoff,  yoff + k * vpad, keys[j], adj = c(0.5, 0), cex = cex, col = key_colors[j], family = "Noto Mono")
+      text(xoff2, yoff + k * vpad, labs[j], adj = c(0, 0), cex = cex, family = "Noto Mono")
+    }
 
     par()
   }
