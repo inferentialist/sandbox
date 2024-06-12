@@ -7,13 +7,19 @@ These scripts generate prettified figures based on a post shared by Ron Kohavi. 
 
 An alternative visualization that "pivots" the data.
 
-> It seems like a contribution in the post / linked doc is to estimate the win-rate, i.e. P(SS), and then use that to recover an estimate of 1 - P(H0), the 9.3% "true effect [estimate]" above. A plug-in estimate of FPR, as a function of alpha and power, follows readily.  
-An alternative visualization might represents this 9.3% as the green column, associated with a sub-population of intrinsically Good experiments. This sub-population of the universe of all experiments abides by the assumption that when we attempt to label one of these experiments as good or bad, we'll get it right, say, 80% (the power) of the time.  
-The other sub-population is the intrinsically Bad experiments. Here, when we attempt to label an experiment, we'll get it wrong, say, 5% (alpha) of the time.  
-This is why there are four regions in the figure: Intrinsically Good, labeled bad; Intrinsically Bad, labeled good; etc. Each of these outcome pairs--Gg, Bg, Gb, Bb--has a probability, and these probabilities add to one.  
-FPR focuses on the experiments that we labeled as good (the top, lighter shaded polygon). Of these, the light red ones were wrongly classified. So,  
-  
-fpr = Bg / (Bg + Gg)
+It seems like a contribution in the post / linked doc is to estimate the win-rate, i.e. P(SS), and then use that to recover an estimate of 1 - P(H0), the 9.3% "true effect [estimate]" above. A plug-in estimate of FPR, as a function of alpha and power, follows readily.
+
+An alternative visualization might represents this 9.3% as the green column, associated with a sub-population of intrinsically Good experiments. This sub-population of the universe of all experiments abides by the assumption that when we attempt to label one of these experiments as good or bad, we'll get it right, say, 80% (the power) of the time.
+
+The other sub-population is the intrinsically Bad experiments. Here, when we attempt to label an experiment, we'll get it wrong, say, 5% (alpha) of the time.
+
+This is why there are four regions in the figure: Intrinsically Good, labeled bad; Intrinsically Bad, labeled good; etc. Each of these outcome pairs--Gg, Bg, Gb, Bb--has a probability, and these probabilities add to one.
+
+FPR focuses on the experiments that we labeled as good (the top, lighter shaded polygon). Of these, the light red ones were wrongly classified. So,
+
+$$ 
+\mbox{fpr} = \frac{Bg}{Bg + Gg}
+$$
 
 ![](fig1.png)
 
