@@ -216,5 +216,7 @@ gpar <- withr::with_par(
   }
 )
 
-dev_id <- dev.copy(png, "fpr/fig1.png")
+dpi <- 96
+dev_dim <- dev.size()
+dev_id <- dev.copy(png, "fpr/fig1.png", width = dev_dim[1], height = dev_dim[2], units = "in", res = dpi)
 dev.off(dev_id)
