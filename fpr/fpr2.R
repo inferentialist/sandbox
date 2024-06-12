@@ -1,11 +1,3 @@
-# This code generates a prettified version of a figure shared by Ron Kohavi
-# that first appeared on my LinkedIn feed in June 2024.
-#
-# URL:
-#   https://www.linkedin.com/posts/ronnyk_here-is-a-graphical-depiction-of-why-about-activity-7201985340968951808-DAUT?utm_source=share&utm_medium=member_desktop
-#
-
-
 library(magrittr)
 library(rlang)
 
