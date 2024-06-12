@@ -63,7 +63,8 @@ params_par <- list(
   # axis title, axis labels, axis line
   mgp = c(0, 1, 0),  # c(3,1,0)
 
-  las = 1
+  las = 1,
+  bg = "white"
 )
 
 params_x11 <- list(
@@ -207,7 +208,7 @@ is_design_cell <- function(ri, ci) {
 graphics.off()
 do.call(x11, params_x11)
 
-p <- withr::with_par(
+gpar <- withr::with_par(
   params_par,
   {
     do.call(plot, params_plot)
@@ -313,3 +314,6 @@ p <- withr::with_par(
     invisible(par())
   }
 )
+
+dev_id <- dev.copy(png, "fpr/fig2.png")
+dev.off(dev_id)

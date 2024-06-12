@@ -7,7 +7,10 @@ These scripts generate prettified figures based on a post shared by Ron Kohavi. 
 
 An alternative visualization that "pivots" the data.
 
+![fig1.png]
 
 ### fpr2.R
 
 A variant of Kohavi's original figure that attempts to better distinguish between two types of significant experiments:  real and spurious.  It uses color more directly and also visually marks unadopted treatments.
+
+![fig2.png]

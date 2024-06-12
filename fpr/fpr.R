@@ -42,7 +42,8 @@ params_par <- list(
   # axis title, axis labels, axis line
   mgp = c(0, 1, 0),  # c(3,1,0)
 
-  las = 1
+  las = 1,
+  bg = "white"
 )
 
 params_x11 <- list(
@@ -108,7 +109,7 @@ text_colors <- list(
 graphics.off()
 do.call(x11, params_x11)
 
-p <- withr::with_par(
+gpar <- withr::with_par(
   params_par,
   {
     do.call(plot, params_plot)
@@ -211,6 +212,9 @@ p <- withr::with_par(
 
     text(1, -0.5 * strheight("", cex = 0.5), "dustin.lennon@gmail.com", adj = c(1, 1), cex = 0.5)
 
-    par()
+    invisible(par())
   }
 )
+
+dev_id <- dev.copy(png, "fpr/fig1.png")
+dev.off(dev_id)
